@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import getWeb3 from "./getWeb3";
-import Lottery from "./contracts/Lottery.json";
+import Student from "./contracts/Student.json";
 import "./App.css";
 
 const App = () => {
@@ -15,10 +15,10 @@ const App = () => {
         const web3 = await getWeb3();
         const networkId = await web3.eth.net.getId();
 
-        const deployedNetwork = Lottery.networks[networkId];
+        const deployedNetwork = Student.networks[networkId];
         console.log("Contract Address:", deployedNetwork.address);
         const instance = new web3.eth.Contract(
-          Lottery.abi,
+          Student.abi,
           deployedNetwork && deployedNetwork.address
         );
         setState({ web3, contract: instance });

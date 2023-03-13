@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Records {
+contract Student {
     struct Record {
         string studentid;
         string name;
@@ -68,3 +68,5 @@ contract Records {
         delete records[_studentid];
     }
 }
+
+// 0x7d591c20DA862e14Ab37722e146A3C77052DA3cb

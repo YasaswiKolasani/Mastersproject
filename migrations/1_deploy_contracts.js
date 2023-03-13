@@ -1,5 +1,5 @@
-const student = artifacts.require("./Student.sol");
+const Student = artifacts.require("./Student.sol");
 
 module.exports = function (deployer) {
-  deployer.deploy(student);
+  deployer.deploy(Student, 1500);
 };
