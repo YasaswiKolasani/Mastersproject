@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import getWeb3 from "./getWeb3";
+
+import Navigationbar from "./components/navbar/Navbar.js";
+import Homepage from "./components/homepage/Homepage.js";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import Student from "./contracts/Student.json";
 import "./App.css";
 
@@ -32,7 +38,13 @@ const App = () => {
 
   return (
     <div className="App">
-      <div>Hello World</div>
+      <Navigationbar/>
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<Homepage state={state} />} />
+          
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 };

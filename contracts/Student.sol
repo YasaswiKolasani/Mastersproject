@@ -14,13 +14,41 @@ contract Student {
     mapping (string => Record) records;
     uint public recordCount;
     uint public scholarship;
+    address public owner;
+    address[] public allowedAddresses;
     string[] private recordKeys;
     
     constructor(uint new_scholarship) {
         assert(new_scholarship >= 1000);
         scholarship=new_scholarship;
+        owner = msg.sender;
     }
-    function createRecord(string memory _studentid, string memory _name,string memory _role, uint _gpa, uint _attendence) public {
+
+    modifier onlyAllowed {
+        bool isAllowed = false;
+        for (uint i = 0; i < allowedAddresses.length; i++) {
+            if (msg.sender == allowedAddresses[i]) {
+                isAllowed = true;
+                break;
+            }
+        }
+        require(isAllowed, "Access denied. You are not allowed to call this function.");
+        _;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "Access denied. You are not the owner.");
+        _;
+    }
+
+    function addAddress(address newAddress) public onlyOwner {
+        allowedAddresses.push(newAddress);
+    }
+
+    function getAddresses() public view onlyOwner returns (address[] memory) {
+        return allowedAddresses;
+    }
+    function createRecord(string memory _studentid, string memory _name,string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
         //require(keccak256(abi.encodePacked(records[_name].name )) == keccak256(abi.encodePacked(_name)), "Record already exists");
         uint _scholarship=0;
         require(scholarship > 0, "Set the scholarship first, to create a record");
@@ -32,7 +60,7 @@ contract Student {
         recordKeys.push(_studentid);
     }
     
-    function updateRecord(string memory _studentid, string memory _name, string memory _role, uint _gpa, uint _attendence) public {
+    function updateRecord(string memory _studentid, string memory _name, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
         Record storage recordToUpdate = records[_studentid];
         recordToUpdate.name = _name;
         recordToUpdate.gpa = _gpa;
@@ -42,7 +70,7 @@ contract Student {
             recordToUpdate.scholarship = scholarship;
     }
     
-    function setScholarship(uint new_scholarship) public {
+    function setScholarship(uint new_scholarship) public onlyAllowed {
         assert(new_scholarship >= 1000);
         scholarship=new_scholarship;
     }
@@ -64,9 +92,7 @@ contract Student {
         return allRecords;
     }
 
-    function deleteRecord(string memory _studentid) public {
+    function deleteRecord(string memory _studentid) public onlyOwner {
         delete records[_studentid];
     }
 }
-
-// 0x7d591c20DA862e14Ab37722e146A3C77052DA3cb

@@ -18,8 +18,8 @@
  *
  */
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-const mnemonic="faith front animal ribbon tiger differ burst dust silent cousin gossip cushion";
+// const HDWalletProvider = require('@truffle/hdwallet-provider');
+// const mnemonic="faith front animal ribbon tiger differ burst dust silent cousin gossip cushion";
 
 //
 // const fs = require('fs');
@@ -43,11 +43,11 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    // development: {
-    //   host: "127.0.0.1", // Localhost (default: none)
-    //   port: 8545, // Standard Ethereum port (default: none)
-    //   network_id: "*", // Any network (default: none)
-    // },
+    development: {
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 8545, // Standard Ethereum port (default: none)
+      network_id: "*", // Any network (default: none)
+    },
 
    // ***** I commented above thing because we need to deploy in goerli test network, not in the local blockchain ********
 
@@ -65,14 +65,14 @@ module.exports = {
     // },
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
-    goerli: {
-    provider: () => new HDWalletProvider(mnemonic, `https://eth-goerli.g.alchemy.com/v2/vH70wHvzUcIDE08sy9OrpfwWGckYF-29`),
-    network_id: 5,       // Ropsten's id
-    gas: 5500000,        // Ropsten has a lower block limit than mainnet
-    confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
-    },
+    // goerli: {
+    // provider: () => new HDWalletProvider(mnemonic, `https://eth-goerli.g.alchemy.com/v2/vH70wHvzUcIDE08sy9OrpfwWGckYF-29`),
+    // network_id: 5,       // Ropsten's id
+    // gas: 5500000,        // Ropsten has a lower block limit than mainnet
+    // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+    // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+    // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    // },
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
