@@ -1,14 +1,12 @@
 import React, { useState, useEffect} from 'react';
-import Form from 'react-bootstrap/Form';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Nav from 'react-bootstrap/Nav';
-import {  Routes, Route, Link} from 'react-router-dom';
+import Container from 'react-bootstrap/Container';
+import { Form, FormGroup, Label, Input, Col, Button } from 'reactstrap';
+import Row from 'react-bootstrap/Row';
 
 const Homepage =({state})=> {
 
 const [account,setAccount] = useState("");
-const [cbalance, setCBalance] = useState(0);
-const [lwinner,setLwinner]=useState("No winner yet");
 
 useEffect(()=>{
 
@@ -25,14 +23,24 @@ const contractBalance = async()=> {
     const {contract} = state;
     const balance = await contract.methods.getbal().call({from:account});
 }
-const winner =async()=>{
-
-}
-    return(
-        <div>Hii from homepage
-
-        </div>
-    );
+return(
+    <div>
+        <Container>
+        <br></br>
+        <Row calss= "mt-1">
+        
+            <h3>
+                <marquee behavior="scroll" direction="left" scrollamount="5" >
+                   <b> <p color='red'>Your Account: {account}</p></b></marquee>
+            </h3>
+        </Row>
+        <Container>
+            
+        </Container>
+        </Container>
+    </div>
+    
+    )
 };
 
 
