@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 contract Student {
     struct Record {
         string studentid;
-        string name;
+        string firstName;
+        string lastName;
         string role;
         uint gpa;
         uint attendence;
@@ -19,6 +20,7 @@ contract Student {
     string[] private recordKeys;
     
     constructor(uint new_scholarship) {
+        require(new_scholarship>=1000, "Scholarship should be atleast 1000");
         assert(new_scholarship >= 1000);
         scholarship=new_scholarship;
         owner = msg.sender;
@@ -32,7 +34,10 @@ contract Student {
                 break;
             }
         }
-        require(isAllowed, "Access denied. You are not allowed to call this function.");
+        if(msg.sender == owner)
+            isAllowed = true;
+        if(isAllowed==false)
+            require(false, "Access denied. You are not allowed to call this function.");
         _;
     }
 
@@ -42,36 +47,65 @@ contract Student {
     }
 
     function addAddress(address newAddress) public onlyOwner {
-        allowedAddresses.push(newAddress);
+        uint check=0;
+        for (uint i = 0; i < allowedAddresses.length; i++) 
+            {
+                if (allowedAddresses[i] == newAddress) {
+                    check=1;
+                    break;
+                }
+            }
+        if(check==1)
+            require(false,"Address already exists in the list");
+        else
+            allowedAddresses.push(newAddress);
+    }
+
+    function deleteAddress(address newAddress) public onlyOwner {
+        uint check=0;
+        for (uint i = 0; i < allowedAddresses.length; i++) 
+        {
+            if (allowedAddresses[i] == newAddress) 
+                {
+                    if (i < allowedAddresses.length - 1)
+                        allowedAddresses[i] = allowedAddresses[allowedAddresses.length - 1];     
+                    allowedAddresses.pop();
+                    check = 1;
+                    break;
+                }
+        }
+        if(check==0)
+            require(false,"Address not found in the list");
     }
 
     function getAddresses() public view onlyOwner returns (address[] memory) {
         return allowedAddresses;
     }
-    function createRecord(string memory _studentid, string memory _name,string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
-        //require(keccak256(abi.encodePacked(records[_name].name )) == keccak256(abi.encodePacked(_name)), "Record already exists");
+    function createRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
+        //require(keccak256(abi.encodePacked(records[_studentid].studentid )) == keccak256(abi.encodePacked(_studentid)), "Student already exists");
         uint _scholarship=0;
         require(scholarship > 0, "Set the scholarship first, to create a record");
-        if(_gpa>300 && _attendence>750)
+        if(_gpa>=300 && _attendence>75)
             _scholarship = scholarship;
-        Record memory newRecord = Record(_studentid, _name, _role, _gpa, _attendence, _scholarship);
+        Record memory newRecord = Record(_studentid, _firstName, _lastName, _role, _gpa, _attendence, _scholarship);
         records[_studentid] = newRecord;
         recordCount++;
         recordKeys.push(_studentid);
     }
     
-    function updateRecord(string memory _studentid, string memory _name, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
+    function updateRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
         Record storage recordToUpdate = records[_studentid];
-        recordToUpdate.name = _name;
+        recordToUpdate.firstName = _firstName;
+        recordToUpdate.lastName = _lastName;
         recordToUpdate.gpa = _gpa;
         recordToUpdate.role = _role;
         recordToUpdate.attendence = _attendence;
-        if(_gpa>300 && _attendence>750 && recordToUpdate.scholarship == 0)
+        if(_gpa>=300 && _attendence>75 && recordToUpdate.scholarship == 0)
             recordToUpdate.scholarship = scholarship;
     }
     
     function setScholarship(uint new_scholarship) public onlyAllowed {
-        assert(new_scholarship >= 1000);
+        require(new_scholarship >=1000, "Scholarship should be more than or equal to $1000");
         scholarship=new_scholarship;
     }
 
@@ -79,9 +113,9 @@ contract Student {
         return recordKeys;
     }
 
-    function getRecord(string memory _studentid) public view returns (string memory, string memory, string memory, uint, uint, uint) {
+    function getRecord(string memory _studentid) public view returns (string memory, string memory, string memory, string memory, uint, uint, uint) {
         Record memory record = records[_studentid];
-        return (record.studentid, record.name, record.role, record.gpa, record.attendence, record.scholarship);
+        return (record.studentid, record.firstName,record.lastName, record.role, record.gpa, record.attendence, record.scholarship);
     }
     
     function getAllRecords() public view returns (Record[] memory) {
