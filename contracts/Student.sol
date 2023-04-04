@@ -8,7 +8,11 @@ contract Student {
         string lastName;
         string role;
         uint gpa;
-        uint attendence;
+        uint gre;
+        bool os;
+        bool ads;
+        bool se;
+        bool dme;
         uint scholarship;
     }
     
@@ -81,27 +85,37 @@ contract Student {
     function getAddresses() public view onlyOwner returns (address[] memory) {
         return allowedAddresses;
     }
-    function createRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
+    function createRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _gre, bool _os, bool _ads, bool _se) public onlyAllowed {
         //require(keccak256(abi.encodePacked(records[_studentid].studentid )) == keccak256(abi.encodePacked(_studentid)), "Student already exists");
-        uint _scholarship=0;
         require(scholarship > 0, "Set the scholarship first, to create a record");
-        if(_gpa>=300 && _attendence>75)
+        uint _scholarship=0;
+        bool _dme=true;
+        if(_gpa>=300 && _gre>=300)
             _scholarship = scholarship;
-        Record memory newRecord = Record(_studentid, _firstName, _lastName, _role, _gpa, _attendence, _scholarship);
+        if(_os==true && _ads==true && _se==true)
+            _dme=false;
+        Record memory newRecord = Record(_studentid, _firstName, _lastName, _role, _gpa, _gre, _os, _ads, _se, _dme, _scholarship);
         records[_studentid] = newRecord;
         recordCount++;
         recordKeys.push(_studentid);
     }
     
-    function updateRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _attendence) public onlyAllowed {
+    function updateRecord(string memory _studentid, string memory _firstName, string memory _lastName, string memory _role, uint _gpa, uint _gre, bool _os, bool _ads, bool _se) public onlyAllowed {
         Record storage recordToUpdate = records[_studentid];
         recordToUpdate.firstName = _firstName;
         recordToUpdate.lastName = _lastName;
         recordToUpdate.gpa = _gpa;
         recordToUpdate.role = _role;
-        recordToUpdate.attendence = _attendence;
-        if(_gpa>=300 && _attendence>75 && recordToUpdate.scholarship == 0)
+        recordToUpdate.gre = _gre;
+        recordToUpdate.os = _os;
+        recordToUpdate.ads = _ads;
+        recordToUpdate.se = _se;
+        if(_gpa>=300 && _gre>=300 && recordToUpdate.scholarship == 0)
             recordToUpdate.scholarship = scholarship;
+        if(_os==true && _ads==true && _se==true)
+            recordToUpdate.dme = false;
+        else
+            recordToUpdate.dme = true;
     }
     
     function setScholarship(uint new_scholarship) public onlyAllowed {
@@ -113,9 +127,9 @@ contract Student {
         return recordKeys;
     }
 
-    function getRecord(string memory _studentid) public view returns (string memory, string memory, string memory, string memory, uint, uint, uint) {
+    function getRecord(string memory _studentid) public view returns (string memory, string memory, string memory, string memory, uint, uint, bool, bool, bool, bool, uint) {
         Record memory record = records[_studentid];
-        return (record.studentid, record.firstName,record.lastName, record.role, record.gpa, record.attendence, record.scholarship);
+        return (record.studentid, record.firstName,record.lastName, record.role, record.gpa, record.gre, record.os, record.ads, record.se, record.dme, record.scholarship);
     }
     
     function getAllRecords() public view returns (Record[] memory) {

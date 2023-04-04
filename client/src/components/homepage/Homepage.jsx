@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { MDBIcon } from 'mdb-react-ui-kit';
-import {Container, Row, Col, Card, Table, Alert, Button, Form} from "react-bootstrap";
-import Modal from 'react-bootstrap/Modal';
 import {
-  Label,
-  Input,
-  Collapse
-} from "reactstrap";
-
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Alert,
+  Button,
+  Form,
+} from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
+import { Label, Input, Collapse } from "reactstrap";
 const Homepage = ({ state }) => {
-  
   //const myWeb3  = new Web3(Web3.givenProvider);
-  const {account} = state;
+  const { account } = state;
 
   const [addAddressIsOpen, setAddAddressIsOpen] = useState(false);
   const [newAddress, setNewAddress] = useState("");
@@ -21,243 +24,295 @@ const Homepage = ({ state }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [scholarshipWarning, setScholarshipWarning] = useState("");
 
-  
-
-  const addAddressToContract =async(e)=>{
-    const {contract}=state;
-    try{
-        await contract.methods.addAddress(newAddress).send({from:account});
-        setSuccessMessage("Address addition successfull");
-        setNewAddress("");
+  const addAddressToContract = async (e) => {
+    const { contract } = state;
+    try {
+      await contract.methods.addAddress(newAddress).send({ from: account });
+      setSuccessMessage("Address addition successfull");
+      setNewAddress("");
+    } catch (e) {
+      if (e.message.includes("invalid address"))
+        setAddAddressError(
+          "Address is Invalid, Please enter Valid metamask address"
+        );
+      else if (e.message.includes("User denied transaction"))
+        setAddAddressError(
+          "You are not allowed to perform this Action (OR) Address may be already exists in the list. Please check the list."
+        );
+      else setAddAddressError("You are not allowed to perform this Action");
+      setNewAddress("");
+      console.log(e.message);
     }
-    catch(e){
-        if(e.message.includes("invalid address"))
-            setAddAddressError("Address is Invalid, Please enter Valid metamask address");
-        else if(e.message.includes("User denied transaction"))
-        setAddAddressError("You are not allowed to perform this Action (OR) Address may be already exists in the list. Please check the list.");
-        else
-            setAddAddressError("You are not allowed to perform this Action");
-        setNewAddress("");
-        console.log(e.message);
-        }
+  };
+  // --------------------------------------------------------------------------------------------------------------------
+  const [getAddressIsOpen, setGetAddressIsOpen] = useState(false);
+  const getAddressToggle = async () => setGetAddressIsOpen(!getAddressIsOpen);
+  const [allAddresses, setAllAddresses] = useState([]);
+  const getAllowedAddresses = async (e) => {
+    const { contract } = state;
+    try {
+      const addresses = await contract.methods
+        .getAddresses()
+        .call({ from: account });
+      setAllAddresses(addresses);
+    } catch (e) {
+      setAddAddressError("You are not allowed to perform this Action");
+      console.log(e);
     }
-// --------------------------------------------------------------------------------------------------------------------
-    const [getAddressIsOpen, setGetAddressIsOpen] = useState(false);
-    const getAddressToggle = async() => setGetAddressIsOpen(!getAddressIsOpen);
-    const [allAddresses, setAllAddresses] = useState([]);
-    const getAllowedAddresses =async(e)=>{
-        const {contract}=state;
-        try{
-            const addresses= await contract.methods.getAddresses().call({from:account});
-            setAllAddresses(addresses);
-        }
-        catch(e){
-            setAddAddressError("You are not allowed to perform this Action");
-            console.log(e);
-            }
-        }
-// --------------------------------------------------------------------------------------------------------------------
-const [delAddressIsOpen, setDelAddressIsOpen] = useState(false);
-const [delAddress, setDelAddress] = useState("");
-const delAddressToggle = () => setDelAddressIsOpen(!delAddressIsOpen);
+  };
+  // --------------------------------------------------------------------------------------------------------------------
+  const [delAddressIsOpen, setDelAddressIsOpen] = useState(false);
+  const [delAddress, setDelAddress] = useState("");
+  const delAddressToggle = () => setDelAddressIsOpen(!delAddressIsOpen);
 
-const delAddressFromContract =async()=>{
-  const {contract}=state;
-  try{
-      await contract.methods.deleteAddress(delAddress).send({from:account});
+  const delAddressFromContract = async () => {
+    const { contract } = state;
+    try {
+      await contract.methods.deleteAddress(delAddress).send({ from: account });
       setSuccessMessage("Address deletion successfull");
       setDelAddress("");
-  }
-  catch(e){
-      if(e.message.includes("invalid address"))
-          setAddAddressError("Address is Invalid, Please enter Valid metamask address");
-      else if(e.message.includes("User denied transaction"))
-            setAddAddressError("Address may be not found in the list. Please check the list.");
-      else
-          setAddAddressError("You are not allowed to perform this Action");
+    } catch (e) {
+      if (e.message.includes("invalid address"))
+        setAddAddressError(
+          "Address is Invalid, Please enter Valid metamask address"
+        );
+      else if (e.message.includes("User denied transaction"))
+        setAddAddressError(
+          "Address may be not found in the list. Please check the list."
+        );
+      else setAddAddressError("You are not allowed to perform this Action");
       setDelAddress("");
       console.log(e.message);
-      }
-  }
-// --------------------------------------------------------------------------------------------------------------------    
-    const [newScholarshipIsOpen, setNewScholarshipIsOpen] = useState(false);
-    const setScholarsipToggle = async() => setNewScholarshipIsOpen(!newScholarshipIsOpen);
-    const [newScholarshipval, setNewScholarshipval] = useState(0);
-    const getScholarship =async()=>{
-        const {contract}=state;
-        try{
-            const existingScholarship= await contract.methods.scholarship().call({from:account});
-            setNewScholarshipval(existingScholarship);
-        }
-        catch(e){
-            setAddAddressError("You are not allowed to perform this Action");
-            console.log(e);
-            }
-        }
-    const setNewScholarship =async()=>{
-        const {contract}=state;
-        try{
-            await contract.methods.setScholarship(newScholarshipval).send({from:account});
-            setSuccessMessage("Scholarship Modification Successfull");
+    }
+  };
+  // --------------------------------------------------------------------------------------------------------------------
+  const [newScholarshipIsOpen, setNewScholarshipIsOpen] = useState(false);
+  const setScholarsipToggle = async () =>
+    setNewScholarshipIsOpen(!newScholarshipIsOpen);
+  const [newScholarshipval, setNewScholarshipval] = useState(0);
+  const getScholarship = async () => {
+    const { contract } = state;
+    try {
+      const existingScholarship = await contract.methods
+        .scholarship()
+        .call({ from: account });
+      setNewScholarshipval(existingScholarship);
+    } catch (e) {
+      setAddAddressError("You are not allowed to perform this Action");
+      console.log(e);
+    }
+  };
+  const setNewScholarship = async () => {
+    const { contract } = state;
+    try {
+      await contract.methods
+        .setScholarship(newScholarshipval)
+        .send({ from: account });
+      setSuccessMessage("Scholarship Modification Successfull");
+    } catch (e) {
+      setAddAddressError(
+        "You are not allowed to perform this Action or scholarship amount is incorrect"
+      );
+      console.log(e);
+    }
+  };
+  // --------------------------------------------------------------------------------------------------------------------
 
-        }
-        catch(e){
-            setAddAddressError("You are not allowed to perform this Action or scholarship amount is incorrect");
-            console.log(e);
-            }
-        }
- // --------------------------------------------------------------------------------------------------------------------
+  const [addStudentIsOpen, setAddStudentIsOpen] = useState(false);
+  const [studentId, setStudentId] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [role, setRole] = useState("");
+  const [os, setOs] = useState(false);
+  const [ads, setAds] = useState(false);
+  const [se, setSe] = useState(false);
+  const [gpa, setGpa] = useState(0);
+  const [gre, setGre] = useState(0);
+  const addStudentToggle = () => setAddStudentIsOpen(!addStudentIsOpen);
 
- const [addStudentIsOpen, setAddStudentIsOpen] = useState(false);
-const [studentId, setStudentId] = useState("");
-const [firstName,setFirstName] = useState("");
-const [lastName,setLastName] = useState("");
-const [role,setRole] = useState("");
-const [gpa,setGpa] = useState(0);
-const [attendence,setAttendence] = useState(0);
-const addStudentToggle = () => setAddStudentIsOpen(!addStudentIsOpen);
-
-const addStudent =async(event)=>{
+  const addStudent = async (event) => {
     event.preventDefault();
-  const {contract}=state;
-  try{
-      const checkDuplicates= await contract.methods.getRecord(studentId).call({from:account});
-      if(checkDuplicates[0]==="")
-      {
-            await contract.methods.createRecord(studentId, firstName, lastName, role, gpa*100, attendence).send({from:account});
-            setSuccessMessage("Created Student Record successfully");
-            setStudentId("");
-            setFirstName("");
-            setLastName("");
-            setRole("");
-            setGpa("");
-            setAttendence("");
-      }
-      else
-      {
+    const { contract } = state;
+    try {
+      const checkDuplicates = await contract.methods
+        .getRecord(studentId)
+        .call({ from: account });
+      if (checkDuplicates[0] === "") {
+        await contract.methods
+          .createRecord(
+            studentId,
+            firstName,
+            lastName,
+            role,
+            gpa * 100,
+            gre,
+            os,
+            ads,
+            se
+          )
+          .send({ from: account });
+        setSuccessMessage("Created Student Record successfully");
+        setStudentId("");
+        setFirstName("");
+        setLastName("");
+        setRole("");
+        setGpa("");
+        setGre("");
+        setOs(false);
+        setAds(false);
+        setSe(false);
+      } else {
         setAddAddressError("A record with this student ID already exists.");
       }
-  }
-  catch(e){
-      if(e.message.includes("invalid address"))
-          setAddAddressError("Address is Invalid, Please enter Valid metamask address");
-      else if(e.message.includes("User denied transaction"))
-            setAddAddressError("Address may be not found in the list. Please check the list.");
-      else
-          setAddAddressError("You are not allowed to perform this Action");
-    setStudentId("");
-    setFirstName("");
-    setLastName("");
-    setRole("");
-    setGpa("");
-    setAttendence("");
+    } catch (e) {
+      if (e.message.includes("invalid address"))
+        setAddAddressError(
+          "Address is Invalid, Please enter Valid metamask address"
+        );
+      else if (e.message.includes("User denied transaction"))
+        setAddAddressError(
+          "Address may be not found in the list. Please check the list."
+        );
+      else setAddAddressError("You are not allowed to perform this Action");
+      setStudentId("");
+      setFirstName("");
+      setLastName("");
+      setRole("");
+      setGpa("");
+      setGre("");
+      setOs(false);
+      setAds(false);
+      setSe(false);
       console.log(e.message);
-      }
-  }
+    }
+  };
 
   const handleCGPAChange = (e) => {
     const regex = /^[0-9]+(\.[0-9]{1,2})?$/;
     const { value } = e.target;
-    if (regex.test(value) || value === "") { // check if value matches the regular expression or is empty
-      setGpa(value);
-    }
-    else{
-        setAddAddressError("Please enter Grade Point Average(GPA) in the format of X.XX");
-        setGpa(0);
-    }
-  };
-
-  const handleAttendence = (e) => {
-    const regex = /^\d+$/;
-    const { value } = e.target;
     if (regex.test(value) || value === "") {
-      setAttendence(value);
-    }
-    else{
-        setAddAddressError("Please round up the value of attendence percentage");
-        setAttendence(0);
+      // check if value matches the regular expression or is empty
+      setGpa(value);
+    } else {
+      setAddAddressError(
+        "Please enter Grade Point Average(GPA) in the format of X.XX"
+      );
+      setGpa(0);
     }
   };
- // -------------------------------------------------------------------------------------------------------------------- 
- const [updStudentIsOpen, setUpdStudentIsOpen] = useState(false);
- const [studentRecords, setStudentRecords] = useState([]);
-const [updstudentId, setUpdStudentId] = useState("");
-const [updFirstName,setUpdFirstName] = useState("");
-const [updLastName,setUpdLastName] = useState("");
-const [updRole,updSetRole] = useState("");
-const [updGpa,setUpdGpa] = useState(0);
-const [updAttendence,setUpdAttendence] = useState(0);
-const updStudentToggle = () => setUpdStudentIsOpen(!updStudentIsOpen);
-const [showUpdateModel, setShowUpdateModel] = useState(false);
-const getStudentRecords =async(e)=>{
-    const {contract}=state;
-    try{
-        const studentRecords= await contract.methods.getAllRecords().call({from:account});
-        console.log(studentRecords);
-        setStudentRecords(studentRecords);
-    }
-    catch(e){
-        console.log(e);
-        }
-}
 
-const updStudent =async(event)=>{
+  const handleGre = (e) => {
+    const { value } = e.target;
+    if (value >= 0 && value <= 340) {
+      setGre(value);
+    } else {
+      setAddAddressError("Invalid GRE Score");
+      setGre(0);
+    }
+  };
+  // --------------------------------------------------------------------------------------------------------------------
+  const [updStudentIsOpen, setUpdStudentIsOpen] = useState(false);
+  const [studentRecords, setStudentRecords] = useState([]);
+  const [updstudentId, setUpdStudentId] = useState("");
+  const [updFirstName, setUpdFirstName] = useState("");
+  const [updLastName, setUpdLastName] = useState("");
+  const [updRole, updSetRole] = useState("");
+  const [updOs, setUpdOs] = useState(false);
+  const [updAds, setUpdAds] = useState(false);
+  const [updSe, setUpdSe] = useState(false);
+  const [updGpa, setUpdGpa] = useState(0);
+  const [updGre, setUpdGre] = useState(0);
+  const updStudentToggle = () => setUpdStudentIsOpen(!updStudentIsOpen);
+  const [showUpdateModel, setShowUpdateModel] = useState(false);
+  const getStudentRecords = async (e) => {
+    const { contract } = state;
+    try {
+      const studentRecords = await contract.methods
+        .getAllRecords()
+        .call({ from: account });
+      console.log(studentRecords);
+      setStudentRecords(studentRecords);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const updStudent = async (event) => {
     event.preventDefault();
-  const {contract}=state;
-  try{
-     
-        await contract.methods.updateRecord(updstudentId, updFirstName, updLastName, updRole, updGpa*100, updAttendence).send({from:account});
-        setSuccessMessage("Updated successfully");
-        await getStudentRecords(event);
-        setUpdStudentId("");
-        setUpdFirstName("");
-        setUpdLastName("");
-        updSetRole("");
-        setUpdGpa("");
-        setUpdAttendence("");
-  }
-  catch(e){
-      if(e.message.includes("invalid address"))
-          setAddAddressError("Address is Invalid, Please enter Valid metamask address");
-      else if(e.message.includes("User denied transaction"))
-            setAddAddressError("Address may be not found in the list. Please check the list.");
-      else
-          setAddAddressError("You are not allowed to perform this Action");
-        setUpdStudentId("");
-        setUpdFirstName("");
-        setUpdLastName("");
-        updSetRole("");
-        setUpdGpa("");
-        setUpdAttendence("");
-        console.log(e.message);
-      }
-  }
+    const { contract } = state;
+    try {
+      await contract.methods
+        .updateRecord(
+          updstudentId,
+          updFirstName,
+          updLastName,
+          updRole,
+          updGpa * 100,
+          updGre,
+          updOs,
+          updAds,
+          updSe
+        )
+        .send({ from: account });
+      setSuccessMessage("Updated successfully");
+      await getStudentRecords(event);
+      setUpdStudentId("");
+      setUpdFirstName("");
+      setUpdLastName("");
+      updSetRole("");
+      setUpdOs(false);
+      setUpdAds(false);
+      setUpdSe(false);
+      setUpdGpa("");
+      setUpdGre("");
+    } catch (e) {
+      if (e.message.includes("invalid address"))
+        setAddAddressError(
+          "Address is Invalid, Please enter Valid metamask address"
+        );
+      else if (e.message.includes("User denied transaction"))
+        setAddAddressError(
+          "Address may be not found in the list. Please check the list."
+        );
+      else setAddAddressError("You are not allowed to perform this Action");
+      setUpdStudentId("");
+      setUpdFirstName("");
+      setUpdLastName("");
+      updSetRole("");
+      setUpdOs(false);
+      setUpdAds(false);
+      setUpdSe(false);
+      setUpdGpa("");
+      setUpdGre("");
+      console.log(e.message);
+    }
+  };
 
   const updHandleCGPAChange = (e) => {
     const regex = /^[0-9]+(\.[0-9]{1,2})?$/;
     const { value } = e.target;
-    if (regex.test(value) || value === "") { // check if value matches the regular expression or is empty
-        setUpdGpa(value);
-    }
-    else{
-        setAddAddressError("Please enter Grade Point Average(GPA) in the format of X.XX");
-        setUpdGpa(0);
+    if (regex.test(value) || value === "") {
+      // check if value matches the regular expression or is empty
+      setUpdGpa(value);
+    } else {
+      setAddAddressError(
+        "Please enter Grade Point Average(GPA) in the format of X.XX"
+      );
+      setUpdGpa(0);
     }
   };
 
-  const updHandleAttendence = (e) => {
-    const regex = /^\d+$/;
+  const updHandleGre = (e) => {
     const { value } = e.target;
-    if (regex.test(value) || value === "") {
-        setUpdAttendence(value);
-    }
-    else{
-        setAddAddressError("Please round up the value of attendence percentage");
-        setUpdAttendence(0);
+    if ((value >= 0 && value <= 340)) {
+      setUpdGre(value);
+    } else {
+      setAddAddressError("Invalid GRE Score");
+      setUpdGre(0);
     }
   };
   const handleCloseUpdate = (e) => {
-        setShowUpdateModel(false);
+    setShowUpdateModel(false);
   };
   // --------------------------------------------------------------------------------------------------------------------
   return (
@@ -320,8 +375,11 @@ const updStudent =async(event)=>{
           setUpdFirstName("");
           setUpdLastName("");
           updSetRole("");
+          setUpdOs(false);
+          setUpdAds(false);
+          setUpdSe(false);
           setUpdGpa("");
-          setUpdAttendence("");
+          setUpdGre("");
         }}
         backdrop="static"
         keyboard={false}
@@ -337,8 +395,11 @@ const updStudent =async(event)=>{
               setUpdFirstName("");
               setUpdLastName("");
               updSetRole("");
+              setUpdOs(false);
+              setUpdAds(false);
+              setUpdSe(false);
               setUpdGpa("");
-              setUpdAttendence("");
+              setUpdGre("");
             }}
             aria-label="Close"
           ></button>
@@ -358,7 +419,7 @@ const updStudent =async(event)=>{
                   setUpdLastName("");
                   updSetRole("");
                   setUpdGpa("");
-                  setUpdAttendence("");
+                  setUpdGre("");
                 }}
               >
                 Close
@@ -391,11 +452,11 @@ const updStudent =async(event)=>{
                 e.preventDefault();
                 handleCloseUpdate(e);
                 setScholarshipWarning(
-                  " Scholarship will be awarded based on GPA and attendence. Please make sure you have entered corrcet information"
+                  " Scholarship will be awarded based on GPA and GRE Score. Please make sure you have entered corrcet information"
                 );
               }}
             >
-              <Form.Group as={Row} mt="4">
+              <Form.Group mt="4">
                 <Row>
                   <Col md="4">
                     <Form.Label>Student ID:</Form.Label>
@@ -409,7 +470,7 @@ const updStudent =async(event)=>{
                 </Form.Control.Feedback>
               </Form.Group>
               <br></br>
-              <Form.Group as={Row} mt="4">
+              <Form.Group mt="4">
                 <Row>
                   <Col md="4">
                     <Form.Label>First Name:</Form.Label>
@@ -431,7 +492,7 @@ const updStudent =async(event)=>{
                 </Form.Control.Feedback>
               </Form.Group>
               <br></br>
-              <Form.Group as={Row} mt="4">
+              <Form.Group mt="4">
                 <Row>
                   <Col md="4">
                     <Form.Label>Last Name:</Form.Label>
@@ -453,7 +514,7 @@ const updStudent =async(event)=>{
                 </Form.Control.Feedback>
               </Form.Group>
               <br></br>
-              <Form.Group as={Row} mt="4">
+              <Form.Group  mt="4">
                 <Row>
                   <Col md="4">
                     <Form.Label>Role:</Form.Label>
@@ -475,7 +536,54 @@ const updStudent =async(event)=>{
                 </Form.Control.Feedback>
               </Form.Group>
               <br></br>
-              <Form.Group as={Row} mt="4">
+              <Row>
+                <Col md={4}>
+                  <Form.Group>
+                    <Label htmlFor="core">CORE COURSES:</Label>
+                  </Form.Group>
+                </Col>
+                <Col md={2}>
+                  <Form.Group>
+                    <Form.Check
+                      type="checkbox"
+                      label="OS"
+                      checked={updOs}
+                      onChange={(e) => {
+                        setUpdOs(!updOs);
+                      }}
+                      inline
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={2}>
+                  <Form.Group>
+                    <Form.Check
+                      type="checkbox"
+                      label="ADS"
+                      checked={updAds}
+                      onChange={(e) => {
+                        setUpdAds(!updAds);
+                      }}
+                      inline
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={2}>
+                  <Form.Group>
+                    <Form.Check
+                      type="checkbox"
+                      label="SE"
+                      checked={updSe}
+                      onChange={(e) => {
+                        setUpdSe(!updSe);
+                      }}
+                      inline
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <br></br>
+              <Form.Group  mt="4">
                 <Row>
                   <Col md="4">
                     <Form.Label>GPA:</Form.Label>
@@ -496,22 +604,20 @@ const updStudent =async(event)=>{
                 </Row>
               </Form.Group>
               <br></br>
-              <Form.Group as={Row} mt="4">
+              <Form.Group  mt="4">
                 <Row>
                   <Col md="4">
-                    <Form.Label>Attendence:</Form.Label>
+                    <Form.Label>GRE Score:</Form.Label>
                   </Col>
                   <Col md="8">
                     <Form.Control
                       type="number"
                       min="0"
                       placeholder="XXX"
-                      max="100"
+                      max="340"
                       step="1"
-                      value={updAttendence === 0 ? "" : updAttendence}
-                      onChange={(e) => {
-                        updHandleAttendence(e);
-                      }}
+                      value={updGre === 0 ? 0 : updGre}
+                      onChange={(e)=>{updHandleGre(e)}}
                     />
                   </Col>
                 </Row>
@@ -548,21 +654,19 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {addAddressIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      )}
-                    </a>
+                    {addAddressIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px", color: "#0d6efd" }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px" }}
+                      />
+                    )}
                   </Col>
                   <Col sm={6}>
                     <Button
@@ -606,7 +710,10 @@ const updStudent =async(event)=>{
                                   <Button
                                     color="primary"
                                     disabled={!(newAddress !== "")}
-                                    onClick={(e)=> {addAddressToContract(e); getAllowedAddresses(e) }}
+                                    onClick={(e) => {
+                                      addAddressToContract(e);
+                                      getAllowedAddresses(e);
+                                    }}
                                   >
                                     Add
                                   </Button>
@@ -625,21 +732,19 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {getAddressIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "2px" }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "2px" }}
-                        />
-                      )}
-                    </a>
+                    {getAddressIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "2px", color: "#0d6efd" }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "2px" }}
+                      />
+                    )}
                   </Col>
                   <Col sm={9}>
                     <Button
@@ -710,21 +815,19 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {delAddressIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      )}
-                    </a>
+                    {delAddressIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px", color: "#0d6efd" }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px" }}
+                      />
+                    )}
                   </Col>
                   <Col sm={7}>
                     <Button
@@ -788,21 +891,19 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {newScholarshipIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{ marginBottom: "1rem", marginRight: "5px" }}
-                        />
-                      )}
-                    </a>
+                    {newScholarshipIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px", color: "#0d6efd" }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{ marginBottom: "1rem", marginRight: "5px" }}
+                      />
+                    )}
                   </Col>
                   <Col sm={8}>
                     <Button
@@ -826,7 +927,7 @@ const updStudent =async(event)=>{
                       <Card.Body>
                         <Col md={10}>
                           <Form>
-                            <Form.Group as={Row} mt="4">
+                            <Form.Group  mt="4">
                               <Row>
                                 <Col md="2">
                                   <Form.Label>New Scholarship:</Form.Label>
@@ -866,29 +967,27 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {addStudentIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{
-                            marginBottom: "1rem",
-                            marginRight: "5px",
-                            color: "#FFA500",
-                          }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{
-                            marginBottom: "1rem",
-                            marginRight: "5px",
-                            color: "#FFA500",
-                          }}
-                        />
-                      )}
-                    </a>
+                    {addStudentIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{
+                          marginBottom: "1rem",
+                          marginRight: "5px",
+                          color: "#FFA500",
+                        }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{
+                          marginBottom: "1rem",
+                          marginRight: "5px",
+                          color: "#FFA500",
+                        }}
+                      />
+                    )}
                   </Col>
                   <Col sm={7}>
                     <Button
@@ -912,10 +1011,10 @@ const updStudent =async(event)=>{
                           <Form onSubmit={addStudent}>
                             <Form.Group>
                               <Row>
-                                  <Label htmlFor="studentid" md={2}>
-                                    {" "}
-                                    Student ID:{" "}
-                                  </Label>
+                                <Label htmlFor="studentid" md={2}>
+                                  {" "}
+                                  Student ID:{" "}
+                                </Label>
                                 <Col xs={4}>
                                   <Input
                                     type="text"
@@ -958,102 +1057,149 @@ const updStudent =async(event)=>{
                               </Col>
                               <Col>
                                 <Form.Group>
-                                    <Row>
-                                  <Label htmlFor="lname" md={4}>
-                                    Last Name:
-                                  </Label>
-                                  <Col xs={8}>
-                                    <Input
-                                      type="text"
-                                      id="lname"
-                                      name="lname"
-                                      required
-                                      placeholder=""
-                                      value={lastName}
-                                      onChange={(e) =>
-                                        setLastName(e.target.value)
-                                      }
-                                    />
-                                  </Col>
+                                  <Row>
+                                    <Label htmlFor="lname" md={4}>
+                                      Last Name:
+                                    </Label>
+                                    <Col xs={8}>
+                                      <Input
+                                        type="text"
+                                        id="lname"
+                                        name="lname"
+                                        required
+                                        placeholder=""
+                                        value={lastName}
+                                        onChange={(e) =>
+                                          setLastName(e.target.value)
+                                        }
+                                      />
+                                    </Col>
                                   </Row>
                                 </Form.Group>
                               </Col>
                             </Row>
                             <br></br>
                             <Form.Group>
-                                <Row>
-                              <Label htmlFor="role" md={2}>
-                                Role:
-                              </Label>
-                              <Col xs={4}>
-                                <Input
-                                  type="text"
-                                  id="role"
-                                  name="role"
-                                  required
-                                  placeholder=""
-                                  value={role}
-                                  onChange={(e) => setRole(e.target.value)}
-                                />
-                              </Col>
+                              <Row>
+                                <Label htmlFor="role" md={2}>
+                                  Role:
+                                </Label>
+                                <Col xs={4}>
+                                  <Input
+                                    type="text"
+                                    id="role"
+                                    name="role"
+                                    required
+                                    placeholder=""
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                  />
+                                </Col>
                               </Row>
                             </Form.Group>
                             <br></br>
                             <Row>
+                              <Col md={3}>
+                                <Form.Group>
+                                  <Label htmlFor="core">CORE COURSES:</Label>
+                                </Form.Group>
+                              </Col>
+                              <Col md={2}>
+                                <Form.Group>
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="OS"
+                                    checked={os}
+                                    onChange={(e) => {
+                                      setOs(!os);
+                                    }}
+                                    inline
+                                  />
+                                </Form.Group>
+                              </Col>
+                              <Col md={2}>
+                                <Form.Group>
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="ADS"
+                                    checked={ads}
+                                    onChange={(e) => {
+                                      setAds(!ads);
+                                    }}
+                                    inline
+                                  />
+                                </Form.Group>
+                              </Col>
+                              <Col md={2}>
+                                <Form.Group>
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="SE"
+                                    checked={se}
+                                    onChange={(e) => {
+                                      setSe(!se);
+                                    }}
+                                    inline
+                                  />
+                                </Form.Group>
+                              </Col>
+                            </Row>
+                            <br></br>
+                            <Row>
                               <Col>
                                 <Form.Group>
-                                    <Row>
-                                  <Label htmlFor="cgpa" md={4}>
-                                    GPA:
-                                  </Label>
-                                  <Col xs={8}>
-                                    <Input
-                                      type="number"
-                                      id="cgpa"
-                                      name="cgpa"
-                                      placeholder="X.XX"
-                                      min="0.00"
-                                      max="4.00"
-                                      step="0.01"
-                                      value={gpa === 0 ? "" : gpa}
-                                      onChange={handleCGPAChange}
-                                    />
-                                  </Col>
+                                  <Row>
+                                    <Label htmlFor="cgpa" md={4}>
+                                      GPA:
+                                    </Label>
+                                    <Col xs={8}>
+                                      <Input
+                                        type="number"
+                                        id="cgpa"
+                                        name="cgpa"
+                                        placeholder="X.XX"
+                                        min="0.00"
+                                        max="4.00"
+                                        step="0.01"
+                                        value={gpa === 0 ? "" : gpa}
+                                        onChange={handleCGPAChange}
+                                      />
+                                    </Col>
                                   </Row>
                                 </Form.Group>
                               </Col>
                               <Col>
                                 <Form.Group>
-                                    <Row>
-                                  <Label htmlFor="attendence" md={4}>
-                                    Attendence:
-                                  </Label>
-                                  <Col xs={8}>
-                                    <Input
-                                      type="number"
-                                      id="attendence"
-                                      name="attendence"
-                                      min="0"
-                                      placeholder="XXX"
-                                      max="100"
-                                      step="1"
-                                      value={attendence === 0 ? "" : attendence}
-                                      onChange={handleAttendence}
-                                    />
-                                  </Col>
+                                  <Row>
+                                    <Label htmlFor="gre" md={4}>
+                                      GRE Score:
+                                    </Label>
+                                    <Col xs={8}>
+                                      <Input
+                                        type="number"
+                                        id="gre"
+                                        name="gre"
+                                        min="0"
+                                        placeholder="XXX"
+                                        max="340"
+                                        step="1"
+                                        value={gre}
+                                        onChange={handleGre}
+                                      />
+                                    </Col>
                                   </Row>
                                 </Form.Group>
                               </Col>
                             </Row>
                             <br></br>
                             <Form.Group>
-                                <Row>
-                              <Col>
-                                <Button variant="success" type="submit">
-                                  {" "}
-                                  CREATE{" "}
-                                </Button>
-                              </Col>
+                              <Row>
+                                <Col>
+                                  <Button variant="success" type="submit">
+                                    {" "}
+                                    CREATE{" "}
+                                  </Button>
+                                </Col>
                               </Row>
                             </Form.Group>
                           </Form>
@@ -1068,29 +1214,27 @@ const updStudent =async(event)=>{
               <Col sm={3}>
                 <Row>
                   <Col sm={1}>
-                    <a href="#">
-                      {updStudentIsOpen ? (
-                        <MDBIcon
-                          icon="angle-down"
-                          size="2x"
-                          style={{
-                            marginBottom: "1rem",
-                            marginRight: "5px",
-                            color: "#FFA500",
-                          }}
-                        />
-                      ) : (
-                        <MDBIcon
-                          icon="angle-right"
-                          size="2x"
-                          style={{
-                            marginBottom: "1rem",
-                            marginRight: "5px",
-                            color: "#FFA500",
-                          }}
-                        />
-                      )}
-                    </a>
+                    {updStudentIsOpen ? (
+                      <MDBIcon
+                        icon="angle-down"
+                        size="2x"
+                        style={{
+                          marginBottom: "1rem",
+                          marginRight: "5px",
+                          color: "#FFA500",
+                        }}
+                      />
+                    ) : (
+                      <MDBIcon
+                        icon="angle-right"
+                        size="2x"
+                        style={{
+                          marginBottom: "1rem",
+                          marginRight: "5px",
+                          color: "#FFA500",
+                        }}
+                      />
+                    )}
                   </Col>
                   <Col sm={11}>
                     <Button
@@ -1122,7 +1266,9 @@ const updStudent =async(event)=>{
                               <th scope="col">Last Name</th>
                               <th scope="col">Role</th>
                               <th scope="col">GPA</th>
-                              <th scope="col">Attendence</th>
+                              <th scope="col">GRE Score</th>
+                              <th scope="col">CORE COURSES</th>
+                              <th scope="col">DME</th>
                               <th scope="col">Scholarship</th>
                               <th scope="col"></th>
                             </tr>
@@ -1137,8 +1283,70 @@ const updStudent =async(event)=>{
                                   <td>{item[2]}</td> {/* last Name */}
                                   <td>{item[3]}</td> {/* role */}
                                   <td>{item[4] / 100}</td> {/* gpa */}
-                                  <td>{item[5]}</td> {/* attendence */}
-                                  <td>{item[6]}</td> {/* scholarship */}
+                                  <td>{item[5]}</td> {/* gre */}
+                                  <td style={{width: "24%"}}>
+                                    <Row>
+                                      <Col xs={4}>
+                                        OS:
+                                        {item[6] ? (
+                                          <MDBIcon
+                                          icon="circle-check"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "green" }}
+                                        />
+                                        ) : (
+                                          <MDBIcon
+                                          icon="times-circle"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "red" }}
+                                        />
+                                        )}{" "}
+                                        {/* OS */}
+                                      </Col>
+                                      <Col xs={5}>
+                                        ADS:
+                                        {item[7] ? (
+                                          <MDBIcon
+                                          icon="circle-check"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "green" }}
+                                        />
+                                        ) : (
+                                          <MDBIcon
+                                          icon="times-circle"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "red" }}
+                                        />
+                                        )}{" "}
+                                        {/* ADS */}
+                                      </Col>
+                                      <Col xs={3}>
+                                        SE:
+                                        {item[8] ? (
+                                          <MDBIcon
+                                          icon="circle-check"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "green" }}
+                                        />
+                                        ) : (
+                                          <MDBIcon
+                                          icon="times-circle"
+                                          size="1x"
+                                          style={{ marginBottom: "1rem", marginRight: "5px", color: "red" }}
+                                        />
+                                        )}
+                                        {/* SE */}
+                                      </Col>
+                                    </Row>
+                                  </td>
+                                  {/* Core courses */}
+                                  <td>
+                                        {item[9] ? (
+                                          "REQUIRED"
+                                        ) : (
+                                          "NOT REQUIRED"
+                                        )}</td> {/* DME */}
+                                  <td>{item[10]}</td> {/* scholarship */}
                                   <td>
                                     {
                                       <Button
@@ -1149,7 +1357,10 @@ const updStudent =async(event)=>{
                                           await setUpdLastName(item[2]);
                                           await updSetRole(item[3]);
                                           await setUpdGpa(item[4] / 100);
-                                          await setUpdAttendence(item[5]);
+                                          await setUpdGre(item[5]);
+                                          await setUpdOs(item[6]);
+                                          await setUpdAds(item[7]);
+                                          await setUpdSe(item[8]);
                                           await setShowUpdateModel(true);
                                         }}
                                       >
