@@ -165,6 +165,7 @@ const Homepage = ({ state }) => {
         setAddAddressError("A record with this student ID already exists.");
       }
     } catch (e) {
+      console.log(e);
       if (e.message.includes("invalid address"))
         setAddAddressError(
           "Address is Invalid, Please enter Valid metamask address"
