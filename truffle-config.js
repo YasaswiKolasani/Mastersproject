@@ -18,8 +18,10 @@
  *
  */
 
+
+  const {REACT_APP_MNEMONIC}=process.env;
   const HDWalletProvider = require('@truffle/hdwallet-provider');
-  const mnemonic="faith front animal ribbon tiger differ burst dust silent cousin gossip cushion";
+  const mnemonic={REACT_APP_MNEMONIC};
 
 //
 // const fs = require('fs');
